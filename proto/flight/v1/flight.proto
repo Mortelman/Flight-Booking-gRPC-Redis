@@ -1,0 +1,81 @@
+syntax = "proto3";
+package flight.v1;
+option go_package = "github.com/flight-booking/flight-service/gen/flight/v1;flightv1";
+
+service FlightService {
+  rpc SearchFlights(SearchFlightsRequest) returns (SearchFlightsResponse);
+  rpc GetFlight(GetFlightRequest) returns (GetFlightResponse);
+  rpc ReserveSeats(ReserveSeatsRequest) returns (ReserveSeatsResponse);
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+}
+
+enum FlightStatus {
+  FLIGHT_STATUS_UNSPECIFIED = 0;
+  FLIGHT_STATUS_SCHEDULED   = 1;
+  FLIGHT_STATUS_DEPARTED    = 2;
+  FLIGHT_STATUS_CANCELLED   = 3;
+  FLIGHT_STATUS_COMPLETED   = 4;
+}
+
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_ACTIVE      = 1;
+  RESERVATION_STATUS_RELEASED    = 2;
+  RESERVATION_STATUS_EXPIRED     = 3;
+}
+
+message Flight {
+  int64  id              = 1;
+  string flight_number   = 2;
+  string airline        = 3;
+  string origin         = 4;  // IATA code (e.g., SVO, LED)
+  string destination    = 5;  // IATA code
+  string departure_time = 6;  // ISO 8601: "2026-04-01T10:00:00Z"
+  string arrival_time   = 7;  // ISO 8601
+  int32  total_seats    = 8;
+  int32  available_seats = 9;
+  int64  price_kopecks  = 10;  // price in kopecks
+  FlightStatus status   = 11;
+}
+
+message SeatReservation {
+  int64  id            = 1;
+  int64  flight_id     = 2;
+  string booking_id    = 3;
+  int32  seat_count    = 4;
+  ReservationStatus status = 5;
+  string created_at   = 6;
+  int64  price_kopecks = 7;
+}
+
+message SearchFlightsRequest {
+  string origin      = 1;  // IATA code
+  string destination = 2;  // IATA code
+  string date        = 3;  // ISO 8601 date: "2026-04-01"
+}
+message SearchFlightsResponse {
+  repeated Flight flights = 1;
+}
+
+message GetFlightRequest {
+  int64 flight_id = 1;
+}
+message GetFlightResponse {
+  Flight flight = 1;
+}
+
+message ReserveSeatsRequest {
+  int64  flight_id  = 1;
+  int32  seat_count = 2;
+  string booking_id = 3;
+}
+message ReserveSeatsResponse {
+  SeatReservation reservation = 1;
+}
+
+message ReleaseReservationRequest {
+  string booking_id = 1;
+}
+message ReleaseReservationResponse {
+  SeatReservation reservation = 1;
+}
